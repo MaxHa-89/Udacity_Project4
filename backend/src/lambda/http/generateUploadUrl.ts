@@ -1,10 +1,48 @@
+/**
+ * Lamba function to generate an upload url
+ */
+
+
 import 'source-map-support/register'
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  APIGatewayProxyHandler
+} from 'aws-lambda'
+import { createLogger } from '../../utils/logger'
+import { parseUserId } from '../../auth/utils'
+import { generateUploadUrl } from '../../services/todos'
 
-import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
+const logger = createLogger('generateUploadUrl')
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const handler: APIGatewayProxyHandler = async (
+  event: APIGatewayProxyEvent
+): Promise<APIGatewayProxyResult> => {
+  logger.info('Processing event', {
+    event
+  })
+
   const todoId = event.pathParameters.todoId
+  const userId = parseUserId(event.headers.Authorization)
 
-  // TODO: Return a presigned URL to upload a file for a TODO item with the provided id
-  return undefined
+  try {
+    const uploadUrl = await generateUploadUrl(userId, todoId)
+    return {
+      statusCode: 201,
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({
+        uploadUrl
+      })
+    }
+  } catch (error) {
+    return {
+      statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({ error: error })
+    }
+  }
 }
