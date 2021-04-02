@@ -1,8 +1,6 @@
 /**
- * Lamba function to create a new todo
+ * Lambda function to create a new todo
  */
-
-
 import 'source-map-support/register'
 import {
   APIGatewayProxyEvent,
@@ -19,7 +17,7 @@ const logger = createLogger('createTodo')
 export const handler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  logger.info('Processing event', {
+  logger.info('Processing create todo event', {
     event
   })
 
@@ -27,7 +25,7 @@ export const handler: APIGatewayProxyHandler = async (
 
   try {
     const todoRequest:CreateTodoRequest = JSON.parse(event.body)
-    const newTodo = await createTodo(userId, todoRequest)
+    const createdTodo = await createTodo(userId, todoRequest)
     return {
       statusCode: 201,
       headers: {
@@ -35,7 +33,7 @@ export const handler: APIGatewayProxyHandler = async (
         'Access-Control-Allow-Credentials': true
       },
       body: JSON.stringify({
-        item: newTodo
+        item: createdTodo
       })
     }
   } catch (error) {

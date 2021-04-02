@@ -9,56 +9,57 @@ const databaseController = new DatabaseController()
 const logger = createLogger('Todos businessLogic')
 
 /**
- * Get the Todos for a specific user over the dataLayer
- * @param userId the user id
- * @returns a json array with the todos
+ * Get todos by user id from database
+ * @param userId
+ * @returns json with the users todos
  */
 export async function getTodos(userId: string): Promise<TodoItem[]> {
   logger.info('Get Todos', {
     userId
   })
-  return await databaseController.getTodos(userId)
+  return await databaseController.getTodos(userId);
 }
 
 /**
- * Update a Todo for a specific user over the dataLayer
- * @param userId the user id
- * @param todoId the todo id
- * @param updatedTodo a json object with the fields to be updated
+ * Update todos by user id from database
+ * @param userId
+ * @param todoId
+ * @param updateTodoRequest
+ * @returns json updated todo
  */
 export async function updateTodo(
   userId: string,
   todoId: string,
-  updatedTodo: UpdateTodoRequest
+  updateTodoRequest: UpdateTodoRequest
 ) {
   logger.info('Update Todo', {
     userId,
-    updatedTodo
+    updatedTodo: updateTodoRequest
   })
-  await databaseController.updateTodo(userId, todoId, updatedTodo)
+  await databaseController.updateTodo(userId, todoId, updateTodoRequest)
 }
 
 /**
- * Create a Todo for a specific user over the dataLayer
- * @param userId the user id
- * @param createdTodo a json object representing a new todo item
- * @returns a json object with the new todo
+ * Create todos by user id from database
+ * @param userId
+ * @param createTodoRequest
+ * @returns json created todo
  */
 export async function createTodo(
   userId: string,
-  createdTodo: CreateTodoRequest
+  createTodoRequest: CreateTodoRequest
 ): Promise<TodoItem> {
   logger.info('Create Todo', {
     userId,
-    createdTodo
+    createdTodo: createTodoRequest
   })
-  return await databaseController.createTodo(userId, createdTodo)
+  return await databaseController.createTodo(userId, createTodoRequest)
 }
 
 /**
- * Delete a Todo for a specific user over the dataLayer
- * @param userId the user id
- * @param todoId the todo id
+ * Delete todos by user id from database
+ * @param userId
+ * @param todoId
  */
 export async function deleteTodo(userId: string, todoId: string) {
   logger.info('Delete Todo', {
@@ -69,15 +70,17 @@ export async function deleteTodo(userId: string, todoId: string) {
 }
 
 /**
- * Generates an upload Url to attach an image to a todo item over the dataLayer
- * @param userId the user id
- * @param todoId the todo id
+ * Generate upload url by user id and todo id
+ * to attach an image to an existing todo
+ *
+ * @param userId
+ * @param todoId
  * @returns the upload url
  */
 export async function generateUploadUrl(userId: string, todoId: string) {
   const uploadUrl = await databaseController.getUploadUrl(todoId)
 
-  logger.info('GetUploadUrl', {
+  logger.info('Get upload url', {
     uploadUrl
   })
 
