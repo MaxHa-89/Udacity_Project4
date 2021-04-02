@@ -12,50 +12,50 @@ const logger = createLogger('DatabaseController')
 const s3 = new AWS.S3({
   signatureVersion: 'v4'
 })
-const bucketName = process.env.IMAGES_S3_BUCKET
-const urlExpiration = process.env.SIGNED_URL_EXPIRATION
+const imagesS3Bucket = process.env.IMAGES_S3_BUCKET
+const signedUrlExpiration = process.env.SIGNED_URL_EXPIRATION
 
 export class DatabaseController {
   constructor(
-    private readonly docClient: DocumentClient = createDynamoDBClient(),
+    private readonly dynamoDBClient: DocumentClient = new XAWS.DynamoDB.DocumentClient(),
     private readonly todosTable = process.env.TODOS_TABLE,
-    private readonly indexName = process.env.TODOS_TABLE_SEC_INDEX
+    private readonly todosTableSecIndex = process.env.TODOS_TABLE_SEC_INDEX
   ) {}
 
   /**
-   * Get the Todos for a specific user
+   * Get todo by user id
    * @param userId the user id
    * @returns a json array with the todos
    */
   public async getTodos(userId: string): Promise<TodoItem[]> {
     const queryParams = {
       TableName: this.todosTable,
-      IndexName: this.indexName,
+      IndexName: this.todosTableSecIndex,
       KeyConditionExpression: 'userId = :userId',
       ExpressionAttributeValues: {
         ':userId': userId
       }
-    }
+    };
 
     logger.info('Querying the database with params:', {
       queryParams
-    })
+    });
 
-    const result = await this.docClient.query(queryParams).promise()
+    const queryResult = await this.dynamoDBClient.query(queryParams).promise();
 
     logger.info('Result:', {
-      result
-    })
+      result: queryResult
+    });
 
-    const items = result.Items
-    return items as TodoItem[]
+    const items = queryResult.Items;
+    return items as TodoItem[];
   }
 
   /**
-   * Update a Todo for a specific user
-   * @param userId the user id
-   * @param todoId the todo id
-   * @param updatedTodo a json object with the fields to be updated
+   * Update todo by use id
+   * @param userId
+   * @param todoId
+   * @param updatedTodo json with updated payload
    */
   async updateTodo(
     userId: string,
@@ -78,22 +78,22 @@ export class DatabaseController {
         '#todoName': 'name'
       },
       ReturnValues: 'UPDATED_NEW'
-    }
+    };
     logger.info('Parameter for the update operation', {
       params
-    })
+    });
 
-    const result = await this.docClient.update(params).promise()
+    const updateResult = await this.dynamoDBClient.update(params).promise()
     logger.info('Update Item succeed', {
-      result
-    })
+      result: updateResult
+    });
   }
 
   /**
-   * Create a Todo for a specific user
-   * @param userId the user id
-   * @param todoRequest a json object representing a new todo item
-   * @returns a json object with the new todo
+   * Create todo by user id
+   * @param userId
+   * @param todoRequest json with payload for new todo entry
+   * @returns json with newly created payload
    */
   async createTodo(
     userId: string,
@@ -106,33 +106,33 @@ export class DatabaseController {
       createdAt: new Date().toISOString(),
       done: false,
       ...todoRequest
-    }
+    };
 
-    logger.info('New Todo object', {
+    logger.info('New todo object', {
       newTodo
-    })
+    });
 
-    const result = await this.docClient
+    const createResult = await this.dynamoDBClient
       .put({
         TableName: this.todosTable,
         Item: newTodo
       })
-      .promise()
+      .promise();
 
     logger.info('Create Item succeed', {
-      result
-    })
+      result: createResult
+    });
 
-    return newTodo
+    return newTodo;
   }
 
   /**
-   * Delete a Todo for a specific user
-   * @param userId the user id
-   * @param todoId the todo id
+   * Delete todo by user id
+   * @param userId
+   * @param todoId
    */
   async deleteTodo(userId: string, todoId: string) {
-    var params = {
+    var deletedTodo = {
       TableName: this.todosTable,
       Key: {
         userId: userId,
@@ -140,37 +140,36 @@ export class DatabaseController {
       }
     }
     logger.info('Parameter for the delete operation', {
-      params
+      params: deletedTodo
     })
 
-    const result = await this.docClient.delete(params).promise()
+    const result = await this.dynamoDBClient.delete(deletedTodo).promise()
     logger.info('Delete Item succeed', {
       result
     })
   }
 
   /**
-   * Generates an upload Url to attach an image to a todo item
-   * @param userId the user id
-   * @param todoId the todo id
-   * @returns the upload url
+   * Generates a url to add an image to an existing todo item
+   * @param todoId
+   * @returns upload url
    */
   async getUploadUrl(todoId: string) {
     return s3.getSignedUrl('putObject', {
-      Bucket: bucketName,
+      Bucket: imagesS3Bucket,
       Key: todoId,
-      Expires: urlExpiration
+      Expires: signedUrlExpiration
     })
   }
 
   /**
-   * Updates the image url for a specific todo
-   * @param userId the user id
-   * @param todoId the todo id
+   * Updates image url by user id and todo id
+   * @param userId
+   * @param todoId
    */
   async updateAttachmentUrl(userId: string, todoId: string) {
-    const attachmentUrl = `https://${bucketName}.s3.amazonaws.com/${todoId}`
-    var params = {
+    const attachmentUrl = `https://${imagesS3Bucket}.s3.amazonaws.com/${todoId}`
+    var updatedAttachment = {
       TableName: this.todosTable,
       Key: {
         userId: userId,
@@ -183,20 +182,12 @@ export class DatabaseController {
       ReturnValues: 'UPDATED_NEW'
     }
     logger.info('Parameter for the update operation', {
-      params
+      params: updatedAttachment
     })
 
-    const result = await this.docClient.update(params).promise()
+    const result = await this.dynamoDBClient.update(updatedAttachment).promise()
     logger.info('Update Item succeed', {
       result
     })
   }
-}
-
-/**
- * Creates a DynamoDB Client
- * @returns the dynamodb client
- */
-function createDynamoDBClient() {
-  return new XAWS.DynamoDB.DocumentClient()
 }

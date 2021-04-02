@@ -1,8 +1,6 @@
 /**
- * Lamba function to generate an upload url
+ * Lambda function to generate an upload url
  */
-
-
 import 'source-map-support/register'
 import {
   APIGatewayProxyEvent,
@@ -18,7 +16,7 @@ const logger = createLogger('generateUploadUrl')
 export const handler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  logger.info('Processing event', {
+  logger.info('Processing generate upload url event', {
     event
   })
 
@@ -26,14 +24,14 @@ export const handler: APIGatewayProxyHandler = async (
   const userId = parseUserId(event.headers.Authorization)
 
   try {
-    const uploadUrl = await generateUploadUrl(userId, todoId)
+    const generatedUploadUrl = await generateUploadUrl(userId, todoId)
     return {
       statusCode: 201,
       headers: {
         'Access-Control-Allow-Origin': '*'
       },
       body: JSON.stringify({
-        uploadUrl
+        uploadUrl: generatedUploadUrl
       })
     }
   } catch (error) {
