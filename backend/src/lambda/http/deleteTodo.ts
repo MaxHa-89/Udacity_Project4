@@ -1,8 +1,6 @@
 /**
- * Lamba function to delete a todo
+ * Lambda function to delete a todo
  */
-
-
 import 'source-map-support/register'
 import { createLogger } from '../../utils/logger'
 import {
@@ -18,7 +16,7 @@ const logger = createLogger('deleteTodo')
 export const handler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  logger.info('Processing event', {
+  logger.info('Processing deletion event', {
     event
   })
   const todoId = event.pathParameters.todoId

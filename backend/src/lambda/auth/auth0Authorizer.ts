@@ -24,7 +24,7 @@ export const handler = async (
   })
   try {
     const jwtToken = await verifyToken(event.authorizationToken)
-    logger.info('User was authorized', {
+    logger.info('User has been successfully authorized', {
       jwtToken
     })
 
@@ -42,7 +42,7 @@ export const handler = async (
       }
     }
   } catch (e) {
-    logger.error('User not authorized', { error: e.message })
+    logger.error('User could not be authorized', { error: e.message })
 
     return {
       principalId: 'user',
@@ -150,7 +150,6 @@ export function getToken(authHeader: string): string {
     throw new Error('Invalid authentication header')
 
   const split = authHeader.split(' ')
-  const token = split[1]
 
-  return token
+  return split[1]
 }

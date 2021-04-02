@@ -1,8 +1,6 @@
 /**
- * Lamba function to get the todos for an user
+ * Lambda function to get the todos for an user
  */
-
-
 import 'source-map-support/register'
 import {
   APIGatewayProxyEvent,
@@ -24,14 +22,14 @@ export const handler: APIGatewayProxyHandler = async (
   const userId = parseUserId(event.headers.Authorization)
   
   try {
-    const items = await getTodos(userId)
+    const todos = await getTodos(userId)
     return {
       statusCode: 200,
       headers: {
         'Access-Control-Allow-Origin': '*'
       },
       body: JSON.stringify({
-        items
+        items: todos
       })
     }
   } catch (error) {

@@ -1,8 +1,6 @@
 /**
- * Lamba function to update a todo
+ * Lambda function to update a todo
  */
-
-
 import 'source-map-support/register'
 import { createLogger } from '../../utils/logger'
 import {APIGatewayProxyEvent,APIGatewayProxyHandler,APIGatewayProxyResult} from 'aws-lambda'
@@ -14,7 +12,7 @@ import { updateTodo } from '../../services/todos'
 const logger = createLogger('updateTodo')
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  logger.info('Processing event', {
+  logger.info('Processing update event', {
     event
   })
   const updatedTodo: UpdateTodoRequest = JSON.parse(event.body)
